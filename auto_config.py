@@ -60,8 +60,8 @@ class AutoTradingConfig:
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
-    # Stock Symbols
-    TRADING_SYMBOLS = ['FPT', 'PVS', 'KBC', 'HPG']
+    # Stock Symbols (only stocks with real-time data from BaoMoi)
+    TRADING_SYMBOLS = ['FPT', 'KBC', 'HPG']  # Removed PVS - no real-time data available
     
     @classmethod
     def is_paper_trading(cls):
