@@ -1,8 +1,29 @@
-.env
+# Python
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+
+# Logs
 *.log
-venv/
-.vscode/
-*.swp
+logs/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+test_*.py
+FINAL_CLEANUP_SUMMARY.md
