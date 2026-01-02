@@ -16,6 +16,13 @@ from telegram_notifier import TelegramNotifier
 from trading_report import TradingReportGenerator
 from utils.logger import logger
 
+# Health check server for Render.com (prevents free tier sleep)
+try:
+    from health_server import start_health_server
+    HEALTH_SERVER_ENABLED = True
+except ImportError:
+    HEALTH_SERVER_ENABLED = False
+
 class AutoTradingBot:
     """Main automated trading bot"""
     
@@ -264,6 +271,11 @@ Bot is now monitoring the market...
 def main():
     """Main entry point"""
     try:
+        # Start health check server for Render.com
+        if HEALTH_SERVER_ENABLED:
+            start_health_server()
+            logger.info("Health check server enabled for Render.com")
+        
         bot = AutoTradingBot()
         bot.trading_loop()
     except Exception as e:
