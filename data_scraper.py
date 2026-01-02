@@ -7,15 +7,32 @@ from bs4 import BeautifulSoup
 from typing import Dict, Optional
 from utils.logger import logger
 import time
+import random
+from datetime import datetime
 
 class StockDataScraper:
     """Scrapes stock data from various sources"""
     
-    def __init__(self):
+    # Base prices for mock data (in VND)
+    MOCK_BASE_PRICES = {
+        'FPT': 120000,
+        'PVS': 25000,
+        'KBC': 35000,
+        'HPG': 28000,
+    }
+    
+    def __init__(self, data_mode='demo'):
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         })
+        self.data_mode = data_mode
+        self.mock_prices = self.MOCK_BASE_PRICES.copy()  # Track mock prices for continuity
+        
+        # Initialize with small random variation
+        for symbol in self.mock_prices:
+            variation = random.uniform(-0.02, 0.02)  # ±2%
+            self.mock_prices[symbol] = self.mock_prices[symbol] * (1 + variation)
     
     def get_stock_data(self, symbol: str) -> Optional[Dict]:
         """
@@ -30,7 +47,14 @@ class StockDataScraper:
         try:
             logger.info(f"Fetching data for {symbol}...")
             
-            # Try multiple sources with fallback
+            # Use mock data if in demo mode
+            if self.data_mode == 'demo':
+                data = self._get_mock_data(symbol)
+                if data:
+                    logger.info(f"Successfully fetched mock data for {symbol}")
+                    return data
+            
+            # Try multiple sources with fallback for real data
             data = self._fetch_from_cafef(symbol)
             if not data:
                 data = self._fetch_from_vietstock(symbol)
@@ -44,6 +68,41 @@ class StockDataScraper:
                 
         except Exception as e:
             logger.error(f"Error fetching data for {symbol}: {e}")
+            return None
+    
+    def _get_mock_data(self, symbol: str) -> Optional[Dict]:
+        """Generate realistic mock stock data for testing"""
+        try:
+            if symbol not in self.MOCK_BASE_PRICES:
+                logger.warning(f"No mock data available for {symbol}")
+                return None
+            
+            # Simulate small price movement (±0.5%)
+            change_pct = random.uniform(-0.5, 0.5)
+            old_price = self.mock_prices[symbol]
+            new_price = old_price * (1 + change_pct / 100)
+            
+            # Update stored price for next call
+            self.mock_prices[symbol] = new_price
+            
+            # Generate realistic volume
+            base_volume = random.randint(100000, 500000)
+            
+            data = {
+                'symbol': symbol,
+                'source': 'mock',
+                'price': round(new_price, -2),  # Round to nearest 100 VND
+                'change': round(change_pct, 2),
+                'volume': base_volume,
+                'rsi': random.uniform(30, 70),  # Mock RSI
+                'macd': random.uniform(-1, 1),  # Mock MACD
+            }
+            
+            logger.debug(f"Mock data for {symbol}: {data['price']:,.0f} VND ({change_pct:+.2f}%)")
+            return data
+            
+        except Exception as e:
+            logger.error(f"Error generating mock data for {symbol}: {e}")
             return None
     
     def _fetch_from_cafef(self, symbol: str) -> Optional[Dict]:
