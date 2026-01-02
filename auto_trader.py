@@ -2,7 +2,7 @@
 Automated Trade Executor
 Executes trades automatically based on bot signals
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from datetime import datetime
 from utils.logger import logger
 from auto_config import AutoTradingConfig
