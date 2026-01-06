@@ -120,3 +120,22 @@ class TelegramNotifier:
         except Exception as e:
             logger.error(f"Error testing bot connection: {e}")
             return False
+    
+    def send_sector_report(self, report: str) -> bool:
+        """
+        Send sector analyst report to Telegram
+        
+        Args:
+            report: Formatted sector analysis report
+            
+        Returns:
+            True if successful
+        """
+        try:
+            # Send without Markdown to avoid formatting issues
+            # Use plain text for better compatibility with Vietnamese characters
+            return self.send_long_message(report, chunk_size=4000)
+            
+        except Exception as e:
+            logger.error(f"Error sending sector report: {e}")
+            return False

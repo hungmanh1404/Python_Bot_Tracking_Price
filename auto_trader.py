@@ -46,6 +46,7 @@ class AutoTradeExecutor:
         decision = analysis['decision']
         
         logger.info(f"🤖 Processing signal for {symbol}: {decision} (Confidence: {confidence}%)")
+        logger.info(f"   📊 Bullish signals: {len(analysis.get('bullish_case', []))}, Bearish: {len(analysis.get('bearish_case', []))}")
         
         # Determine action based on decision
         if '🟢' in decision and confidence >= self.config.MIN_CONFIDENCE_TO_BUY:
@@ -58,6 +59,8 @@ class AutoTradeExecutor:
             # Sell if we have a position
             if symbol in self.simulator.positions:
                 return self._execute_sell(symbol, current_price, 100, "Exit signal - low confidence")
+        else:
+            logger.debug(f"   ⏸️  No action: Confidence {confidence}% below thresholds (Buy: {self.config.MIN_CONFIDENCE_TO_BUY}%, Accumulate: {self.config.MIN_CONFIDENCE_TO_ACCUMULATE}%)")
         
         return False
     

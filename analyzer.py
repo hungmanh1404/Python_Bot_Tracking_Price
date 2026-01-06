@@ -59,8 +59,12 @@ class Agent3Analyzer:
         
         # Check price trend (with safe None handling)
         change = data.get('change') or 0
-        if change > 0:
+        if change > 2:
+            bullish_signals.append(f"💪 Giá tăng mạnh {change:.2f}% - Momentum tích cực")
+        elif change > 0.5:
             bullish_signals.append(f"Giá tăng {change:.2f}% trong phiên gần nhất")
+        elif change > 0:
+            bullish_signals.append(f"Giá tăng nhẹ {change:.2f}% - Xu hướng dương")
         
         # Check technical indicators (if available)
         rsi = data.get('rsi')
@@ -71,13 +75,26 @@ class Agent3Analyzer:
         if macd and macd > 0:
             bullish_signals.append("MACD cho tín hiệu tích cực")
         
-        # Check volume
+        # Check volume - enhanced
         volume = data.get('volume') or 0
-        if volume > 1000000:
+        if volume > 2000000:
+            bullish_signals.append("🔥 Volume đột biến - Quan tâm lớn từ thị trường")
+        elif volume > 1000000:
             bullish_signals.append("Thanh khoản tốt, có sự quan tâm từ thị trường")
         
-        # Add general market context
-        bullish_signals.append(f"Cổ phiếu {symbol} - Vị thế dẫn đầu trong ngành")
+        # Check price vs high/low
+        price = data.get('price', 0)
+        price_high = data.get('high', price)
+        price_low = data.get('low', price)
+        
+        if price_high > price_low and price > 0:
+            price_position = (price - price_low) / (price_high - price_low) if (price_high - price_low) > 0 else 0.5
+            if price_position > 0.8:
+                bullish_signals.append("Giá gần đỉnh phiên - Lực mua mạnh")
+        
+        # Add general market context only if we have other signals
+        if len(bullish_signals) > 0:
+            bullish_signals.append(f"Cổ phiếu {symbol} - Vị thế dẫn đầu trong ngành")
         
         return bullish_signals if bullish_signals else ["Không phát hiện tín hiệu mua rõ ràng"]
     
@@ -89,8 +106,10 @@ class Agent3Analyzer:
         
         # Check price trend (with safe None handling)
         change = data.get('change') or 0
-        if change < 0:
-            bearish_signals.append(f"Giá giảm {abs(change):.2f}% - Momentum yếu")
+        if change < -2:
+            bearish_signals.append(f"⚠️ Giá giảm mạnh {abs(change):.2f}% - Momentum yếu")
+        elif change < -0.5:
+            bearish_signals.append(f"Giá giảm {abs(change):.2f}% - Áp lực bán")
         
         # Check RSI
         rsi = data.get('rsi')
@@ -102,9 +121,19 @@ class Agent3Analyzer:
         if macd and macd < 0:
             bearish_signals.append("MACD âm - Xu hướng yếu")
         
-        # General risks
-        bearish_signals.append("Rủi ro biến động thị trường chung (VN-Index)")
-        bearish_signals.append("Thanh khoản có thể giảm trong kỳ nghỉ lễ")
+        # Check price near low
+        price = data.get('price', 0)
+        price_high = data.get('high', price)
+        price_low = data.get('low', price)
+        
+        if price_high > price_low and price > 0:
+            price_position = (price - price_low) / (price_high - price_low) if (price_high - price_low) > 0 else 0.5
+            if price_position < 0.2:
+                bearish_signals.append("Giá gần đáy phiên - Áp lực bán mạnh")
+        
+        # Only add general risk if we have specific bearish signals
+        if len(bearish_signals) > 1:
+            bearish_signals.append("Rủi ro biến động thị trường chung")
         
         return bearish_signals if bearish_signals else ["Không phát hiện rủi ro lớn"]
     
@@ -192,28 +221,37 @@ class Agent3Analyzer:
         
         ratio = bullish_count / bearish_count
         
-        # Calculate base confidence
+        # Calculate base confidence - more aggressive
         if ratio > 2:
-            base_score = 80
+            base_score = 75
         elif ratio > 1.5:
-            base_score = 70
+            base_score = 65
         elif ratio > 1:
-            base_score = 60
+            base_score = 55
         elif ratio > 0.7:
-            base_score = 50
+            base_score = 45
         else:
-            base_score = 40
+            base_score = 35
         
-        # Adjust for price momentum (with safe None handling)
+        # Adjust for price momentum (with safe None handling) - INCREASED WEIGHT
         change = data.get('change') or 0
-        if change > 2:
-            base_score += 10
-        elif change > 0:
-            base_score += 5
-        elif change < -2:
-            base_score -= 10
-        elif change < 0:
+        if change > 3:
+            base_score += 20  # Strong momentum
+        elif change > 1.5:
+            base_score += 12
+        elif change > 0.3:
+            base_score += 8
+        elif change < -3:
+            base_score -= 15
+        elif change < -1.5:
+            base_score -= 8
+        elif change < -0.3:
             base_score -= 5
+        
+        # Boost for volume
+        volume = data.get('volume', 0)
+        if volume > 2000000:
+            base_score += 5  # High volume = more confidence
         
         # Cap between 0-100
         return max(0, min(100, base_score))

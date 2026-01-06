@@ -16,7 +16,7 @@ class AutoTradingConfig:
     PAPER_TRADING_MODE = True  # Set False for real trading
     
     # Data Source
-    DATA_MODE = 'demo'  # 'demo' for mock data, 'real' for actual market data
+    DATA_MODE = 'real'  # 'demo' for mock data, 'real' for actual market data
     
     # Timing
     POLL_INTERVAL = 300  # 5 minutes (in seconds)
@@ -35,13 +35,13 @@ class AutoTradingConfig:
     MIN_POSITION_SIZE = 0.05  # 5% minimum
     
     # Trading Thresholds
-    MIN_CONFIDENCE_TO_BUY = 60
-    MIN_CONFIDENCE_TO_ACCUMULATE = 50
-    MIN_CONFIDENCE_TO_SELL = 40
+    MIN_CONFIDENCE_TO_BUY = 50        # Lowered from 60 for real market data
+    MIN_CONFIDENCE_TO_ACCUMULATE = 40  # Lowered from 50
+    MIN_CONFIDENCE_TO_SELL = 30        # Lowered from 40
     
     # Risk Management
-    STOP_LOSS_PCT = 0.08  # -8% auto sell
-    TAKE_PROFIT_PCT = 0.15  # +15% auto sell 50%
+    STOP_LOSS_PCT = 0.06  # -6% auto sell (more realistic)
+    TAKE_PROFIT_PCT = 0.12  # +12% auto sell 50% (balanced)
     TRAILING_STOP_PCT = 0.05  # 5% trailing stop
     
     MAX_DAILY_LOSS_PCT = 0.05  # -5% stop trading for the day
@@ -60,8 +60,35 @@ class AutoTradingConfig:
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
+    # Sector Analyst Configuration
+    SECTOR_ANALYST_MODE = True
+    DAILY_REPORT_TIME = '08:30'  # Vietnam time - report before market opens
+    
+    # FPT Monitoring Thresholds
+    FPT_PE_THRESHOLD = 18.0  # Alert if P/E < 18x (undervalued)
+    FPT_REVENUE_GROWTH_THRESHOLD = 15.0  # Alert if quarterly growth < 15%
+    
+    # PVS Monitoring (via Brent oil)
+    PVS_BRENT_THRESHOLD = 85.0  # USD per barrel
+    PVS_BRENT_DAYS_STABLE = 7  # Number of days to confirm trend
+    
+    # KBC Monitoring (news keywords)
+    KBC_KEYWORDS = [
+        'KBC ký biên bản ghi nhớ',
+        'Foxconn',
+        'LG Innotek',
+        'Samsung',
+        'hợp tác chiến lược'
+    ]
+    
+    # HPG Monitoring (via Shanghai steel HRC)
+    HPG_HRC_WEEKS_INCREASE = 2  # Number of consecutive weeks of price increase
+    
     # Stock Symbols (only stocks with real-time data from BaoMoi)
     TRADING_SYMBOLS = ['FPT', 'KBC', 'HPG']  # Removed PVS - no real-time data available
+    
+    # Sector Analyst Symbols (includes PVS monitored via oil prices)
+    SECTOR_ANALYST_SYMBOLS = ['FPT', 'PVS', 'KBC', 'HPG']
     
     @classmethod
     def is_paper_trading(cls):
