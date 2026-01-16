@@ -35,24 +35,31 @@ class AutoTradingConfig:
     MIN_POSITION_SIZE = 0.05  # 5% minimum
     
     # Trading Thresholds
-    MIN_CONFIDENCE_TO_BUY = 50        # Lowered from 60 for real market data
-    MIN_CONFIDENCE_TO_ACCUMULATE = 40  # Lowered from 50
-    MIN_CONFIDENCE_TO_SELL = 30        # Lowered from 40
+    MIN_CONFIDENCE_TO_BUY = 40        # Lowered to match analyzer logic
+    MIN_CONFIDENCE_TO_ACCUMULATE = 30  
+    MIN_CONFIDENCE_TO_SELL = 30
     
-    # Risk Management
-    STOP_LOSS_PCT = 0.06  # -6% auto sell (more realistic)
-    TAKE_PROFIT_PCT = 0.12  # +12% auto sell 50% (balanced)
-    TRAILING_STOP_PCT = 0.05  # 5% trailing stop
+    # Risk Management (Trụ 3)
+    RISK_PER_TRADE_PCT = 0.01  # 1% risk per trade
+    INITIAL_CAPITAL = 10_000_000  # Fixed 10M VND
     
+    # Stop Loss & Take Profit
+    MIN_RR_RATIO = 2.0  # Take profit must be at least 2x risk
+    STOP_LOSS_PCT = 0.05  # Max 5% hard stop
+    TRAILING_STOP_PCT = 0.05
+    TAKE_PROFIT_PARTIAL_1 = 0.30  # Sell 30% at R:1.5
+    TAKE_PROFIT_PARTIAL_2 = 0.40  # Sell 40% at R:2.0
+    
+    # Safety Limits
     MAX_DAILY_LOSS_PCT = 0.05  # -5% stop trading for the day
     MAX_DRAWDOWN_PCT = 0.15  # -15% stop completely
-    MAX_CONSECUTIVE_LOSSES = 3  # Stop after 3 losses in a row
+    MAX_CONSECUTIVE_LOSSES = 3  # Stop after 3 losses in a row (Trigger 48h pause)
     
     # Position Limits
-    MAX_OPEN_POSITIONS = 4  # Maximum number of stocks to hold
+    MAX_OPEN_POSITIONS = 3  # Reduced to focus on quality
     
     # Reporting
-    HOURLY_REPORT = True
+    HOURLY_REPORT = False  # Disabled default hourly spam (using NotificationController)
     DAILY_REPORT = True
     TRADE_ALERTS = True
     
